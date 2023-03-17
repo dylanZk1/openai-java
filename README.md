@@ -1,4 +1,4 @@
-![原项目](https://github.com/TheoKanning/openai-java/)
+[原项目](https://github.com/TheoKanning/openai-java/)
 
 ![Maven Central](https://img.shields.io/maven-central/v/com.theokanning.openai-gpt3-java/client?color=blue)
 
