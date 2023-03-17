@@ -1,38 +1,39 @@
+![原项目](https://github.com/TheoKanning/openai-java/)
+
 ![Maven Central](https://img.shields.io/maven-central/v/com.theokanning.openai-gpt3-java/client?color=blue)
 
-> ⚠️ Please switch to using the new 'service' library if you need to use OpenAiService. The old 'client' OpenAiService is deprecated as of 0.10.0.  
-> ⚠️OpenAI has deprecated all Engine-based APIs. See [Deprecated Endpoints](https://github.com/TheoKanning/openai-java#deprecated-endpoints) below for more info.
+> ⚠️ 注意！'client'模块已于0.10.0版本废弃，若从0.10.0 开始继续使用，请换为'service'模块  
+> ⚠️OpenAI已弃用所有基于引擎的API. 详情见 [Deprecated Endpoints](https://github.com/TheoKanning/openai-java#deprecated-endpoints) 
 
 # OpenAI-Java
-Java libraries for using OpenAI's GPT-3 api.
+适配 chatGPT3 API 的 java 版代码
 
-Includes the following artifacts:
-- `api` : request/response POJOs for the GPT-3 APIs.
-- `client` : a basic retrofit client for the GPT-3 endpoints, includes the `api` module
-- `service` : A basic service class that creates and calls the client. This is the easiest way to get started.
+共包含如下 2 个核心模块:
+- `api` : 以 POJO （可以理解为 javaBean）的形式定义了 chatGPT3 API 中涉及到的参数
+- `service` : （最新版本适用）调用 api 模块中定义的参数，并构建 retrofit 以请求并接收 chatGPT
 
-as well as an example project using the service.
+同样，example 模块中定义了请求示例
 
-## Supported APIs
-- [Models](https://platform.openai.com/docs/api-reference/models)
-- [Completions](https://platform.openai.com/docs/api-reference/completions)
-- [Chat Completions](https://platform.openai.com/docs/api-reference/chat/create)
-- [Edits](https://platform.openai.com/docs/api-reference/edits)
-- [Embeddings](https://platform.openai.com/docs/api-reference/embeddings)
-- [Files](https://platform.openai.com/docs/api-reference/files)
+## 适配到的 chatGPT API
+- [GPT模型](https://platform.openai.com/docs/api-reference/models)
+- [Completions(文本补全)](https://platform.openai.com/docs/api-reference/completions)
+- [Chat Completions(会话补全)](https://platform.openai.com/docs/api-reference/chat/create)
+- [Edits(将输入内容原封不动返回)](https://platform.openai.com/docs/api-reference/edits)
+- [Embeddings(展示模型生成的每个文本对应的关联值)](https://platform.openai.com/docs/api-reference/embeddings)
+- [Files(文件分析)](https://platform.openai.com/docs/api-reference/files)
 - [Fine-tunes](https://platform.openai.com/docs/api-reference/fine-tunes)
 - [Images](https://platform.openai.com/docs/api-reference/images)
 - [Moderations](https://platform.openai.com/docs/api-reference/moderations)
 
-#### Deprecated by OpenAI
+#### 已废除的 API
 - [Engines](https://platform.openai.com/docs/api-reference/engines)
 
-## Importing
+## 导入项目
 
-### Gradle
+### Gradle版本
 `implementation 'com.theokanning.openai-gpt3-java:<api|client|service>:<version>'`
 
-### Maven
+### Maven版本
 ```xml
    <dependency>
     <groupId>com.theokanning.openai-gpt3-java</groupId>
@@ -41,22 +42,22 @@ as well as an example project using the service.
    </dependency>
 ```
 
-## Usage
-### Data classes only
-If you want to make your own client, just import the POJOs from the `api` module.
-Your client will need to use snake case to work with the OpenAI API.
+## 用法
+### 数据类
+如想自定义请求client，可自行修改 api 模块中的 POJO字段
+建议字段命名方式使用驼峰命名法，以便于适配 chatGPT 官方 API 的命名方式
 
-### Retrofit client
-If you're using retrofit, you can import the `client` module and use the [OpenAiApi](client/src/main/java/com/theokanning/openai/OpenAiApi.java).  
-You'll have to add your auth token as a header (see [AuthenticationInterceptor](client/src/main/java/com/theokanning/openai/AuthenticationInterceptor.java))
-and set your converter factory to use snake case and only include non-null fields.
+### Retrofit 客户端
+Service模块中定义了 [OpenAiApi](service/src/main/java/com/theokanning/openai/OpenAiApi.java)已适配 Retrofit.  
+(see [AuthenticationInterceptor](service/src/main/java/com/theokanning/openai/AuthenticationInterceptor.java))中传入了 secret KEY 字段，
+你需要在自己的项目中new一个内部定义的 OpenAiService 类并传入
 
 ### OpenAiService
-If you're looking for the fastest solution, import the `service` module and use [OpenAiService](service/src/main/java/com/theokanning/openai/service/OpenAiService.java).  
+[OpenAiService](service/src/main/java/com/theokanning/openai/service/OpenAiService.java) 封装了简易版的 API 调用类
 
-> ⚠️The OpenAiService in the client module is deprecated, please switch to the new version in the service module.
+> ⚠️注意！'client'模块中的 openAiService 已于0.10.0版本废弃，若从0.10.0 开始继续使用，请换为'service'模块  
 ```java
-OpenAiService service = new OpenAiService("your_token");
+OpenAiService service = new OpenAiService("你的secret Key");
 CompletionRequest completionRequest = CompletionRequest.builder()
         .prompt("Somebody once told me the world is gonna roll me")
         .model("ada")
@@ -65,9 +66,9 @@ CompletionRequest completionRequest = CompletionRequest.builder()
 service.createCompletion(completionRequest).getChoices().forEach(System.out::println);
 ```
 
-### Customizing OpenAiService
-If you need to customize OpenAiService, create your own Retrofit client and pass it in to the constructor.
-For example, do the following to add request logging (after adding the logging gradle dependency):
+### 自定义 OpenAiService
+若想自定义 OpenAIService，请自定义 Retrofit 并传入相应的构造器
+如下为实例代码（别忘了在gradle中添加依赖）
 
 ```java
 ObjectMapper mapper = defaultObjectMapper();
@@ -81,8 +82,8 @@ OpenAiApi api = retrofit.create(OpenAiApi.class);
 OpenAiService service = new OpenAiService(api);
 ```
 
-### Adding a Proxy
-To use a proxy, modify the OkHttp client as shown below:
+### 添加代理
+如下代码实现了向 OkhttpClient 对象中创建Proxy的过程
 ```java
 ObjectMapper mapper = defaultObjectMapper();
 Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
@@ -97,19 +98,21 @@ OpenAiService service = new OpenAiService(api);
 
 
 
-## Running the example project
-All the [example](example/src/main/java/example/OpenAiApiExample.java) project requires is your OpenAI api token
+## 运行示例
+[示例](example/src/main/java/example/OpenAiApiExample.java) 代码涉及到的token部分均需填入自己的secret Key
 ```bash
 export OPENAI_TOKEN="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 ./gradlew example:run
 ```
+你也可以把项目直接导入到 idea 或 eclipse
 
-## Deprecated Endpoints
-OpenAI has deprecated engine-based endpoints in favor of model-based endpoints. 
-For example, instead of using `v1/engines/{engine_id}/completions`, switch to `v1/completions` and specify the model in the `CompletionRequest`.
-The code includes upgrade instructions for all deprecated endpoints.
+## 已废除的接口
+有几个引擎接口已经废除
+比如, 原先为 `v1/engines/{engine_id}/completions`, 现在为 `v1/completions` and specify the model in the `CompletionRequest`.
+所有废除的接口都会在代码中以 @deprecated 注解表明
 
-I won't remove the old endpoints from this library until OpenAI shuts them down.
+这些被废除的接口会在官方正式关闭后删除对应实现接口，在此之间你可以进行调用，但不保证能正常调用
+（本项目未删除 client 模块），但已经删除其依赖，若想添加此模块依赖，请自行修改 gradle 依赖配置
 
-## License
-Published under the MIT License
+## 协议
+本项目遵循 MIT 协议
