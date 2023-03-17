@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.theokanning.openai.DeleteResult;
-import com.theokanning.openai.OpenAiApi;
 import com.theokanning.openai.OpenAiError;
 import com.theokanning.openai.OpenAiHttpException;
 import com.theokanning.openai.completion.CompletionRequest;
@@ -35,6 +34,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +57,11 @@ public class OpenAiService {
         this(token, DEFAULT_TIMEOUT);
     }
 
+    public OpenAiService(final String token, final Proxy proxy) {
+        this(token, DEFAULT_TIMEOUT, proxy);
+    }
+
+
     /**
      * Creates a new OpenAiService that wraps OpenAiApi
      *
@@ -65,6 +70,17 @@ public class OpenAiService {
      */
     public OpenAiService(final String token, final Duration timeout) {
         this(buildApi(token, timeout));
+    }
+
+    /**
+     * Creates a new OpenAiService that wraps OpenAiApi with Proxy
+     * @param token OpenAi token string "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+     * @param timeout http read timeout, Duration.ZERO means no timeout
+     * @param proxy Proxy in OkhttpClient
+     */
+
+    public OpenAiService(final String token, final Duration timeout, final Proxy proxy) {
+        this(buildApi(token, timeout, proxy));
     }
 
     /**
@@ -88,7 +104,7 @@ public class OpenAiService {
     public CompletionResult createCompletion(CompletionRequest request) {
         return execute(api.createCompletion(request));
     }
-    
+
     public ChatCompletionResult createChatCompletion(ChatCompletionRequest request) {
         return execute(api.createChatCompletion(request));
     }
@@ -218,10 +234,10 @@ public class OpenAiService {
             return apiCall.blockingGet();
         } catch (HttpException e) {
             try {
-                if (e.response() == null || e.response().errorBody() == null) {
+                if (e.response() == null || Objects.requireNonNull(e.response()).errorBody() == null) {
                     throw e;
                 }
-                String errorBody = e.response().errorBody().string();
+                String errorBody = Objects.requireNonNull(Objects.requireNonNull(e.response()).errorBody()).string();
 
                 OpenAiError error = errorMapper.readValue(errorBody, OpenAiError.class);
                 throw new OpenAiHttpException(error, e, e.code());
@@ -232,10 +248,20 @@ public class OpenAiService {
         }
     }
 
+
     public static OpenAiApi buildApi(String token, Duration timeout) {
         Objects.requireNonNull(token, "OpenAI token required");
         ObjectMapper mapper = defaultObjectMapper();
         OkHttpClient client = defaultClient(token, timeout);
+        Retrofit retrofit = defaultRetrofit(client, mapper);
+
+        return retrofit.create(OpenAiApi.class);
+    }
+
+    public static OpenAiApi buildApi(String token, Duration timeout, Proxy proxy) {
+        Objects.requireNonNull(token, "OpenAI token required");
+        ObjectMapper mapper = defaultObjectMapper();
+        OkHttpClient client = defaultClient(token, timeout, proxy);
         Retrofit retrofit = defaultRetrofit(client, mapper);
 
         return retrofit.create(OpenAiApi.class);
@@ -251,6 +277,15 @@ public class OpenAiService {
 
     public static OkHttpClient defaultClient(String token, Duration timeout) {
         return new OkHttpClient.Builder()
+                .addInterceptor(new AuthenticationInterceptor(token))
+                .connectionPool(new ConnectionPool(5, 1, TimeUnit.SECONDS))
+                .readTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
+                .build();
+    }
+
+    public static OkHttpClient defaultClient(String token, Duration timeout, Proxy proxy) {
+        return new OkHttpClient.Builder()
+                .proxy(proxy)
                 .addInterceptor(new AuthenticationInterceptor(token))
                 .connectionPool(new ConnectionPool(5, 1, TimeUnit.SECONDS))
                 .readTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
