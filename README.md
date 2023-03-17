@@ -3,7 +3,7 @@
 ![Maven Central](https://img.shields.io/maven-central/v/com.theokanning.openai-gpt3-java/client?color=blue)
 
 > ⚠️ 注意！'client'模块已于0.10.0版本废弃，若从0.10.0 开始继续使用，请换为'service'模块  
-> ⚠️OpenAI已弃用所有基于引擎的API. 详情见 [Deprecated Endpoints](https://github.com/dylanZk1/openai-java#deprecated-endpoints) 
+> ⚠️OpenAI已弃用所有基于引擎的API. 详情见 [已废除的接口](#已废除的接口) 
 
 # OpenAI-Java
 适配 chatGPT3 API 的 java 版代码
