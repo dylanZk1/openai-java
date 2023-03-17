@@ -106,6 +106,7 @@ export OPENAI_TOKEN="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 ```
 你也可以把项目直接导入到 idea 或 eclipse
 
+<span id = "Deprecated Endpoints"/>
 ## 已废除的接口
 有几个引擎接口已经废除
 比如, 原先为 `v1/engines/{engine_id}/completions`, 现在为 `v1/completions` and specify the model in the `CompletionRequest`.
