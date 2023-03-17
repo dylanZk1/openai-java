@@ -49,7 +49,7 @@
 
 ### Retrofit 客户端
 Service模块中定义了 [OpenAiApi](service/src/main/java/com/theokanning/openai/OpenAiApi.java)已适配 Retrofit.  
-(see [AuthenticationInterceptor](service/src/main/java/com/theokanning/openai/AuthenticationInterceptor.java))中传入了 secret KEY 字段，
+(详情见 [AuthenticationInterceptor](service/src/main/java/com/theokanning/openai/AuthenticationInterceptor.java))中传入了 secret KEY 字段，
 你需要在自己的项目中new一个内部定义的 OpenAiService 类并传入
 
 ### OpenAiService
