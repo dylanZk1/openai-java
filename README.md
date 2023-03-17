@@ -111,7 +111,7 @@ export OPENAI_TOKEN="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 比如, 原先为 `v1/engines/{engine_id}/completions`, 现在为 `v1/completions` and specify the model in the `CompletionRequest`.
 所有废除的接口都会在代码中以 @deprecated 注解表明
 
-这些被废除的接口会在官方正式关闭后删除对应实现接口，在此之间你可以进行调用，但不保证能正常调用
+这些被废除的接口会在官方正式关闭后删除对应实现接口，在此之间你可以进行调用，但不保证能正常调用  
 （本项目未删除 client 模块，但已经删除其依赖，若想添加此模块依赖，请自行修改 gradle 依赖配置）
 
 ## 协议
